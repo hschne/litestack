@@ -43,8 +43,7 @@ module Litesupport
 
   # Databases will be stored by default at this path.
   def self.root(env = Litesupport.environment)
-    ensure_root_volume detect_root(env)
-  end
+    ensure_root_volume   end
 
   # Default path where we'll store all of the databases.
   def self.detect_root(env)
@@ -63,6 +62,46 @@ module Litesupport
     FileUtils.mkdir_p path unless path.exist?
     path
   end
+
+  def self.configuration
+    @configuration ||= Configuration.new
+  end
+
+  def self.configure
+    yield(configuration)
+  end
+
+  # Configuration object for Litesupport
+  class Configuration
+    attr_accessor :root
+
+    # Initialize the configuration by setting configuration default values
+    def initialize(**kwargs)
+      reset
+      kwargs.each { |key, value| instance_variable_set("@#{key}", value) }
+    end
+
+    # Reset the configuration to default values
+    def reset
+      @root = set_root
+    end
+
+    private
+
+    def set_root
+      path = if ENV['LITESTACK_DATA_PATH']
+               ENV['LITESTACK_DATA_PATH']
+             elsif defined? Rails
+               './storage'
+             else
+               '.'
+             end
+
+      env = Litesupport.env
+      Pathname.new(path).join(env)
+    end
+  end
+
 
   class Mutex
     def initialize
