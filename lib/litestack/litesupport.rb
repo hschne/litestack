@@ -74,10 +74,10 @@ module Litesupport
                '.'
              end
 
-      Pathname.new(path)
+      Pathname.new(path).join(detect_environment)
     end
 
-  # Detect the Rack or Rails environment.
+    # Detect the Rack or Rails environment.
     def detect_environment
       if defined? Rails
         Rails.env

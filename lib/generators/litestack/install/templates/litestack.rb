@@ -2,6 +2,6 @@
 
 Litesupport.configure do |config|
   # Below are default values, change if required
-  # config.root = './storage' 
-  # config.environment = Rails.env 
+  # config.root = Pathname.new('./storage').join(Rails.env)
+  # config.environment = Rails.env
 end

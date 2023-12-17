@@ -41,7 +41,6 @@ require_relative "./litejobqueue"
 module Litejob
   def self.included(klass)
     klass.extend(ClassMethods)
-    klass.get_jobqueue
   end
 
   module ClassMethods
