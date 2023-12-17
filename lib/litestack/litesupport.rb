@@ -12,21 +12,14 @@ require_relative "./litescheduler"
 module Litesupport
   class Error < StandardError; end
 
-  # Detect the Rack or Rails environment.
-  def self.detect_environment
-    if defined? Rails
-      Rails.env
-    elsif ENV["RACK_ENV"]
-      ENV["RACK_ENV"]
-    elsif ENV["APP_ENV"]
-      ENV["APP_ENV"]
-    else
-      "development"
-    end
+  # The current environment (development, staging, production...)
+  def self.environment
+    configuration.environment 
   end
 
-  def self.environment
-    @environment ||= detect_environment
+  # Databases will be stored by default at this path.
+  def self.root
+    ensure_root_volume configuration.root
   end
 
   # common db object options
@@ -39,23 +32,6 @@ module Litesupport
       attr_reader :stmts
     end
     db
-  end
-
-  # Databases will be stored by default at this path.
-  def self.root(env = Litesupport.environment)
-    ensure_root_volume   end
-
-  # Default path where we'll store all of the databases.
-  def self.detect_root(env)
-    path = if ENV["LITESTACK_DATA_PATH"]
-      ENV["LITESTACK_DATA_PATH"]
-    elsif defined? Rails
-      "./db"
-    else
-      "."
-    end
-
-    Pathname.new(path).join(env)
   end
 
   def self.ensure_root_volume(path)
@@ -73,7 +49,7 @@ module Litesupport
 
   # Configuration object for Litesupport
   class Configuration
-    attr_accessor :root
+    attr_accessor :environment, :root
 
     # Initialize the configuration by setting configuration default values
     def initialize(**kwargs)
@@ -83,25 +59,37 @@ module Litesupport
 
     # Reset the configuration to default values
     def reset
-      @root = set_root
+      @environment = detect_environment
+      @root = detect_root
     end
 
     private
 
-    def set_root
-      path = if ENV['LITESTACK_DATA_PATH']
-               ENV['LITESTACK_DATA_PATH']
+    def detect_root
+      path = if ENV["LITESTACK_DATA_PATH"]
+               ENV["LITESTACK_DATA_PATH"]
              elsif defined? Rails
-               './storage'
+               "./storage"
              else
                '.'
              end
 
-      env = Litesupport.env
-      Pathname.new(path).join(env)
+      Pathname.new(path)
+    end
+
+  # Detect the Rack or Rails environment.
+    def detect_environment
+      if defined? Rails
+        Rails.env
+      elsif ENV["RACK_ENV"]
+        ENV["RACK_ENV"]
+      elsif ENV["APP_ENV"]
+        ENV["APP_ENV"]
+      else
+        "development"
+      end
     end
   end
-
 
   class Mutex
     def initialize
@@ -213,7 +201,7 @@ module Litesupport
     end
 
     def configure(options = {})
-      # detect enviornment (production, development, etc.)
+      # detect environment (production, development, etc.)
       defaults = begin
         self.class::DEFAULT_OPTIONS
       rescue

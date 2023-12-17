@@ -12,6 +12,10 @@ class Litestack::InstallGenerator < Rails::Generators::Base
     copy_file "cable.yml", "config/cable.yml", force: true
   end
 
+  def add_initializer
+    copy_file "litestack.rb", "config/initializers/litestack.rb", force: true
+  end
+
   def modify_cache_store_adapter
     gsub_file "config/environments/production.rb",
       "# config.cache_store = :mem_cache_store",
@@ -28,8 +32,8 @@ class Litestack::InstallGenerator < Rails::Generators::Base
     append_file ".gitignore", <<~TEXT
 
       # Ignore default Litestack SQLite databases.
-      /db/**/*.sqlite3
-      /db/**/*.sqlite3-*
+      /storage/**/*.sqlite3
+      /storage/**/*.sqlite3-*
     TEXT
   end
 end

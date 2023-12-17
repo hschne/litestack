@@ -9,3 +9,4 @@ Example:
         config/environments/production.rb
         config/database.yml
         config/cable.yml
+        .gitignore
